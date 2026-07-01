@@ -5,6 +5,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Added `quoteRef` to `CreateOrder` entity to allow creating an order from a quote
+
 ## [0.11.29] - 2026-06-04
 
 - Added `bundleArrowSphereSku` and `bundleUuid` fields to `Product` order request entity

@@ -45,7 +45,7 @@ class CreateOrderTest extends TestCase
         new CreateOrder($payload);
     }
 
-    public function testExceptionCreateOrderWithoutProducts(): void
+    public function testExceptionCreateOrderWithoutProductsAndWithoutQuoteRef(): void
     {
         $payload = [
             'customer' => [
@@ -80,6 +80,18 @@ class CreateOrderTest extends TestCase
                     'friendlyName'            => 'test',
                     'arrowSpherePriceBandSku' => 'testArrowsSku',
                 ],
+            ],
+        ];
+        self::expectException(EntitiesException::class);
+        new CreateOrder($payload);
+    }
+
+    public function testExceptionCreateOrderWithoutQuoteRefAndProducts(): void
+    {
+        $payload = [
+            'customer' => [
+                'reference' => 'test',
+                'poNumber'  => 'test',
             ],
         ];
         self::expectException(EntitiesException::class);
@@ -251,5 +263,44 @@ class CreateOrderTest extends TestCase
         self::assertEquals('PRJ-2026-001', $order->jsonSerialize()['customFields'][1]['value']);
         self::assertEquals('Cost Center', $order->jsonSerialize()['customFields'][2]['label']);
         self::assertEquals('CC-1234', $order->jsonSerialize()['customFields'][2]['value']);
+    }
+
+    public function testCreateOrderWithQuoteRefOnly(): void
+    {
+        $payload = [
+            'customer' => [
+                'reference' => 'test',
+                'poNumber'  => 'test',
+            ],
+            'quoteRef' => 'XSPO1234',
+        ];
+
+        $order = new CreateOrder($payload);
+
+        self::assertEquals('XSPO1234', $order->jsonSerialize()['quoteRef']);
+        self::assertArrayNotHasKey('products', $order->jsonSerialize());
+    }
+
+    public function testCreateOrderWithQuoteRefAndProducts(): void
+    {
+        $payload = [
+            'customer' => [
+                'reference' => 'test',
+                'poNumber'  => 'test',
+            ],
+            'quoteRef' => 'XSPO1234',
+            'products' => [
+                [
+                    'quantity'                => 1,
+                    'arrowSpherePriceBandSku' => 'testArrowsSku',
+                ],
+            ],
+        ];
+
+        $order = new CreateOrder($payload);
+
+        self::assertEquals('XSPO1234', $order->jsonSerialize()['quoteRef']);
+        self::assertCount(1, $order->jsonSerialize()['products']);
+        self::assertEquals(1, $order->jsonSerialize()['products'][0]['quantity']);
     }
 }

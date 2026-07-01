@@ -3,6 +3,7 @@
 namespace ArrowSphere\PublicApiClient\Orders\Request;
 
 use ArrowSphere\PublicApiClient\Entities\AbstractEntity;
+use ArrowSphere\PublicApiClient\Entities\Exception\EntitiesException;
 use ArrowSphere\PublicApiClient\Entities\Property;
 use ArrowSphere\PublicApiClient\Orders\Request\SubEntities\Customer;
 use ArrowSphere\PublicApiClient\Orders\Request\SubEntities\CustomField;
@@ -17,6 +18,7 @@ class CreateOrder extends AbstractEntity
     public const COLUMN_PRODUCTS = 'products';
     public const COLUMN_SCENARIO = 'scenario';
     public const COLUMN_CUSTOM_FIELDS = 'customFields';
+    public const COLUMN_QUOTE_REF = 'quoteRef';
 
     #[Property()]
     protected ?string $scenario = null;
@@ -30,8 +32,11 @@ class CreateOrder extends AbstractEntity
     #[Property(type: Customer::class, required: true)]
     protected Customer $customer;
 
-    #[Property(type: Product::class, isArray: true, required: true)]
-    protected array $products;
+    #[Property(type: Product::class, isArray: true, required: false)]
+    protected ?array $products = null;
+
+    #[Property()]
+    protected ?string $quoteRef = null;
 
     /**
      * @param array{
@@ -40,7 +45,8 @@ class CreateOrder extends AbstractEntity
      *     extraInformation?: array{programs: array<string,string>},
      *     customer: array{reference: string, poNumber?: string},
      *     customFields?: array{label: string, value: string},
-     *     products: array{
+     *     quoteRef?: string,
+     *     products?: array{
      *          arrowSpherePriceBandSku:string,
      *          quantity:int,
      *          parentLicenseId?:string,
@@ -67,5 +73,11 @@ class CreateOrder extends AbstractEntity
     public function __construct(array $data)
     {
         parent::__construct($data);
+
+        if ($this->quoteRef === null && empty($this->products)) {
+            throw new EntitiesException(
+                self::class . ': At least one of quoteRef or products must be provided'
+            );
+        }
     }
 }

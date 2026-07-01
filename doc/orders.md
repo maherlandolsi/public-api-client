@@ -32,13 +32,14 @@ OrdersFilters is designed to simplify search process of orders
 
 To simplify order creating process we design objects structure where dev can simply set the needed attribute
 
-| Field            | Type                 | Example                                         | Description                         |
-|------------------|----------------------|-------------------------------------------------|-------------------------------------|
-| scheduledDate    | `?string`            | 2024-12-01                                      | Schedule a date for new order       |
-| extraInformation | `ExtraInformation[]` | List of [ExtraInformation](#ExtraInformation)   | Define list of Eavs for order       |
-| customer         | `Customer`           | [Customer](#Customer)                           | Define end Customer for order       |
-| products         | `Product[]`          | List of product [Product](#Product)             | Define List of product of order     |
-| customFields     | `CustomField[]`      | List of customField [CustomField](#CustomField) | Define List of customField of order |
+| Field            | Type                 | Example                                         | Description                                                                              |
+|------------------|----------------------|-------------------------------------------------|------------------------------------------------------------------------------------------|
+| scheduledDate    | `?string`            | 2024-12-01                                      | Schedule a date for new order                                                            |
+| extraInformation | `ExtraInformation[]` | List of [ExtraInformation](#ExtraInformation)   | Define list of Eavs for order                                                            |
+| customer         | `Customer`           | [Customer](#Customer)                           | Define end Customer for order                                                            |
+| products         | `?Product[]`         | List of product [Product](#Product)             | Define List of product of order. Required if `quoteRef` is not provided                 |
+| customFields     | `CustomField[]`      | List of customField [CustomField](#CustomField) | Define List of customField of order                                                      |
+| quoteRef         | `?string`            | XSPO1234                                        | Reference to an existing quote. Required if `products` is not provided                  |
 
 #### Customer
 
@@ -339,6 +340,34 @@ $payload =[
 $order = new CreateOrder($payload);
 $ref = $client->createOrder($order);
 echo  'order has been created successfully '. $ref
+```
+
+#### Creating an order from a quote reference
+
+If you have a pre-existing quote, you can create an order by providing only the `quoteRef` without specifying `products`:
+
+```php
+<?php
+
+use ArrowSphere\PublicApiClient\Orders\OrdersClient;
+use ArrowSphere\PublicApiClient\Orders\Request\CreateOrder;
+
+const URL = 'https://your-url-to-arrowsphere.example.com';
+const API_KEY = 'your API key in ArrowSphere';
+
+$client = (new OrdersClient())
+    ->setUrl(URL)
+    ->setApiKey(API_KEY);
+
+$payload = [
+    'customer' => [
+        'reference' => 'XSP4533',
+    ],
+    'quoteRef' => 'XSPO1234',
+];
+$order = new CreateOrder($payload);
+$ref = $client->createOrder($order);
+echo 'order has been created successfully ' . $ref;
 ```
 
 ### getOrder EndPoint
